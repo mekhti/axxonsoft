@@ -8,7 +8,7 @@
 #include <future>
 #include <fstream>
 
-#define NCOUNT_BUFFER_SIZE 1 * 1024 * 1024 // 1 MB for buffer
+#define NCOUNT_BUFFER_SIZE (1 * 1024 * 1024) // 1 MB for buffer
 
 // Function declarations
 std::vector<std::string> parse_cli_options(int argc, char *argv[], std::string &directory);
@@ -159,17 +159,17 @@ uint64_t count_lines_ncount(const std::filesystem::path &file_path) {
 uint64_t count_buffered_ncount(const std::filesystem::path &file_path){
     std::ifstream file(file_path, std::ios::in);
     std::vector<char> buffer(NCOUNT_BUFFER_SIZE);
-    uint64_t count = 0;
+    uint64_t lines_count = 0;
 
     while (file.read(buffer.data(), buffer.size())) {
-        count += std::count(buffer.begin(), buffer.end(), '\n');
+        lines_count += std::count(buffer.begin(), buffer.end(), '\n');
     }
 
     // Count remaining characters after last read
-    count += std::count(buffer.begin(), buffer.begin() + file.gcount(), '\n');
+    lines_count += std::count(buffer.begin(), buffer.begin() + file.gcount(), '\n');
 
-    // Update global line count
-    return count;
+    // Update global line lines_count
+    return lines_count;
 }
 
 /**
