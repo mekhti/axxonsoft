@@ -143,17 +143,17 @@ uint64_t count_buffered_ncount_async(const std::vector<std::filesystem::director
 uint64_t count_lines_getline(const std::filesystem::path &file_path) {
     std::ifstream file{file_path};
     std::string line;
-    uint64_t count = 0;
+    uint64_t lines_count = 0;
     while (std::getline(file, line)) {
-        ++count;
+        ++lines_count;
     }
-    return count;
+    return lines_count;
 }
 
 uint64_t count_lines_ncount(const std::filesystem::path &file_path) {
     std::ifstream file{file_path};
-    uint64_t count = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
-    return count;
+    uint64_t lines_count = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
+    return lines_count;
 }
 
 uint64_t count_buffered_ncount(const std::filesystem::path &file_path){
