@@ -62,8 +62,17 @@ int main(int argc, char *argv[]) {
     }
 
     if (std::find(options.begin(), options.end(), "b") != options.end()) {
+        /**
+         * Benchmarking different methods
+         *
+         * 1. getline method.
+         * 2. ncount method.
+         * 3. buffered ncount method.
+         */
+
         std::cout << "Benchmarking...\n";
 
+        // getline method
         auto start = std::chrono::steady_clock::now();
         uint64_t lines_count = count_getline_async(files);
         std::cout << "getline method total runing time: "
@@ -71,6 +80,7 @@ int main(int argc, char *argv[]) {
                   << " millisecond \n";
         std::cout << "Total lines: " << lines_count << "\n";
 
+        // ncount method
         start = std::chrono::steady_clock::now();
         lines_count = count_ncount_async(files);
         std::cout << "ncounting method total runing time: "
@@ -78,42 +88,83 @@ int main(int argc, char *argv[]) {
                   << " millisecond \n";
         std::cout << "Total lines: " << lines_count << "\n";
 
+        // buffered ncount method
         start = std::chrono::steady_clock::now();
         lines_count = count_buffered_ncount_async(files);
         std::cout << "buffered ncounting method total runing time: "
                   << std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count()
                   << " millisecond \n";
         std::cout << "Total lines: " << lines_count << "\n";
-
-        return 0;
     } else if (std::find(options.begin(), options.end(), "n") != options.end()) {
+        // ncount method
         std::cout << "Lines count using ncount method: " << count_ncount_async(files) << "\n";
     } else if (std::find(options.begin(), options.end(), "g") != options.end()) {
+        // getline method
         std::cout << "Lines count using getline method: " << count_getline_async(files) << "\n";
     } else if (std::find(options.begin(), options.end(), "m") != options.end()) {
+        // buffered ncount method
         std::cout << "Lines count using buffered ncount method: " << count_buffered_ncount_async(files) << "\n";
     } else {
+        // default method, getline method used as a default method
         std::cout << count_getline_async(files) << "\n";
     }
 
     return 0;
 }
 
+
+/**
+ * Three functions below implement parallelization of counting lines using different methods.
+ * std::future and std::async are used for parallelization and concurrency. This approach avoids
+ * the complexity of manually managing threads and takes advantage of the automatic thread
+ * management offered by std::async.
+ *
+ * The code of each function launches a separate task for each file in the directory using
+ * std::async, which automatically takes care of thread management. Each task returns
+ * a std::future that will eventually hold the number of lines in the corresponding file.
+ * The futures vector stores these std::future objects. The total number of lines is then
+ * computed by iterating through the futures vector and calling get on each std::future,
+ * which blocks until the result is available.
+ *
+ * However, a key aspect to remember is that while std::async can enable tasks to be run in parallel,
+ * it doesn't necessarily guarantee that they will be. The actual level of concurrency is decided
+ * by the system's task scheduler and the C++ runtime environment. So while this method is a best
+ * practice for potentially utilizing all available CPU cores, it doesn't provide an absolute guarantee.
+ *
+ * Comparing this approach to a single-threaded approach, the std::async method could be faster
+ * if the workload is large enough and the system has multiple cores, as the work can be divided
+ * among the cores. On the other hand, for small workloads or on a single-core system, a single-threaded
+ * approach may be faster due to the overhead of thread creation and management with std::async.
+ */
+
 uint64_t count_getline_async(const std::vector<std::filesystem::directory_entry> &files) {
-    std::vector<std::future<uint64_t>> futures;
-    futures.reserve(files.size());
+    /**
+     * Count lines using getline method.
+     *
+     * @param files vector of files to count lines
+     * @return total lines count
+     */
+    std::vector<std::future<uint64_t>> futures; // vector of futures
+    futures.reserve(files.size()); // reserve space for futures
     for (const auto &file: files) {
+        // for each file, create a future and push it to the vector
         futures.push_back(std::async(std::launch::async, count_lines_getline, file.path()));
     }
 
-    uint64_t lines_count = 0;
+    uint64_t lines_count = 0; // total lines count
     for (auto &future: futures) {
-        lines_count += future.get();
+        lines_count += future.get(); // get the value of the future and add it to the total lines count
     }
     return lines_count;
 }
 
 uint64_t count_ncount_async(const std::vector<std::filesystem::directory_entry> &files) {
+    /**
+     * Count lines using ncount method.
+     *
+     * @param files vector of files to count lines
+     * @return total lines count
+     */
     std::vector<std::future<uint64_t>> futures;
     futures.reserve(files.size());
     for (const auto &file: files) {
@@ -128,6 +179,12 @@ uint64_t count_ncount_async(const std::vector<std::filesystem::directory_entry> 
 }
 
 uint64_t count_buffered_ncount_async(const std::vector<std::filesystem::directory_entry> &files){
+    /**
+     * Count lines using buffered ncount method.
+     *
+     * @param files vector of files to count lines
+     * @return total lines count
+     */
     std::vector<std::future<uint64_t>> futures;
     futures.reserve(files.size());
     for (const auto &file: files) {
@@ -142,6 +199,16 @@ uint64_t count_buffered_ncount_async(const std::vector<std::filesystem::director
 }
 
 uint64_t count_lines_getline(const std::filesystem::path &file_path) {
+    /**
+     * Count lines using getline method.
+     *
+     * Counting lines in a text file can be an I/O bound process, and it could be a performance
+     * bottleneck for the given task. The solution provided uses the standard getline function
+     * in a line-by-line fashion, which might not be the most efficient way.
+     *
+     * @param file_path path to the file to count lines
+     * @return total lines count
+     */
     std::ifstream file{file_path};
     std::string line;
     uint64_t lines_count = 0;
@@ -152,12 +219,24 @@ uint64_t count_lines_getline(const std::filesystem::path &file_path) {
 }
 
 uint64_t count_lines_ncount(const std::filesystem::path &file_path) {
+    /**
+     * Count lines using ncount method.
+     *
+     * @param file_path path to the file to count lines
+     * @return total lines count
+     */
     std::ifstream file{file_path};
     uint64_t lines_count = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
     return lines_count;
 }
 
 uint64_t count_buffered_ncount(const std::filesystem::path &file_path){
+    /**
+     * Count lines using buffered ncount method.
+     *
+     * @param file_path path to the file to count lines
+     * @return total lines count
+     */
     std::ifstream file(file_path, std::ios::in);
     std::vector<char> buffer(NCOUNT_BUFFER_SIZE);
     uint64_t lines_count = 0;
