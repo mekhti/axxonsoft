@@ -1,0 +1,39 @@
+NAME:   Erwinia carotovora atroseptica
+Strain: LMG 2386
+Pheno:  0251034201
+
+Name:   Erwinia carotovora carotovora
+Strain: LMG 2404
+Pheno:  0251034204
+
+Name:   Erwinia carotovora betavasculorum
+Strain: LMG 2466
+Pheno:  0251034202
+
+Name:   Erwinia chrysanthemi
+Strain: LMG 2804
+Pheno:  0253035205
+
+Name:   Erwinia cypripedii
+Strain: LMG 2657
+Pheno:  0051311301
+
+Name:   Enterobacter dissolvens
+Strain: LMG 2683
+Pheno:  0454034001
+
+Name:   Pantoea agglomerans
+Strain: LMG 2565
+Pheno:  0153004202
+
+Name:   Escherichia hermanii
+Strain: X80675
+Pheno:  0434034501
+
+Name:   Hafnia alvei
+Strain: M59155
+Pheno:  0201051200
+
+Name:   Klebsiella pneumoniae
+Strain: X87276
+Pheno:  0455034101
