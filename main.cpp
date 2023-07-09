@@ -5,6 +5,7 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
+#include <algorithm>
 #include <future>
 #include <fstream>
 
